@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M3TAL Documentation Hub</title>
+  <meta name="description" content="Technical documentation, API references, configuration guides, and install instructions for the M3TAL system.">
+  <link rel="stylesheet" href="/assets/css/m3tal.css">
+  <script src="/assets/js/m3tal.js" defer></script>
+  <!-- Marked.js Markdown Parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+  <!-- Global Header -->
+  <header id="m3tal-global-header"></header>
+
+  <!-- Docs Container -->
+  <div class="m3tal-docs-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="m3tal-sidebar">
+      
+      <div class="m3tal-sidebar-title">Core System</div>
+      <ul class="m3tal-sidebar-menu">
+        <li class="m3tal-sidebar-item" id="link-m3tal-core-README">
+          <a href="#/m3tal-core/README">Introduction</a>
+        </li>
+        <li class="m3tal-sidebar-item" id="link-m3tal-core-INSTALL">
+          <a href="#/m3tal-core/INSTALL">Installation</a>
+        </li>
+        <li class="m3tal-sidebar-item" id="link-m3tal-core-CONFIG">
+          <a href="#/m3tal-core/CONFIG">Configuration</a>
+        </li>
+        <li class="m3tal-sidebar-item" id="link-m3tal-core-API">
+          <a href="#/m3tal-core/API">CLI & API Reference</a>
+        </li>
+        <li class="m3tal-sidebar-item" id="link-m3tal-core-CHANGELOG">
+          <a href="#/m3tal-core/CHANGELOG">Changelog</a>
+        </li>
+      </ul>
+
+      <div class="m3tal-sidebar-title">Plugin System</div>
+      <ul class="m3tal-sidebar-menu">
+        <li class="m3tal-sidebar-item" id="link-plugins-README">
+          <a href="#/plugins/README">Overview</a>
+        </li>
+        <li class="m3tal-sidebar-item" id="link-plugins-DEVELOPMENT">
+          <a href="#/plugins/DEVELOPMENT">Plugin Development</a>
+        </li>
+      </ul>
+
+      <div class="m3tal-sidebar-title">APT Packages</div>
+      <ul class="m3tal-sidebar-menu">
+        <li class="m3tal-sidebar-item" id="link-apt-INSTALL">
+          <a href="#/apt/INSTALL">Apt Setup</a>
+        </li>
+        <li class="m3tal-sidebar-item" id="link-apt-KEYRING">
+          <a href="#/apt/KEYRING">Keyring & GPG</a>
+        </li>
+      </ul>
+
+      <div class="m3tal-sidebar-title">Ecosystem</div>
+      <ul class="m3tal-sidebar-menu">
+        <li class="m3tal-sidebar-item" id="link-ecosystem-ARCHITECTURE">
+          <a href="#/ecosystem/ARCHITECTURE">Architecture Vision</a>
+        </li>
+        <li class="m3tal-sidebar-item" id="link-ecosystem-ROADMAP">
+          <a href="#/ecosystem/ROADMAP">Roadmap</a>
+        </li>
+      </ul>
+
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="m3tal-docs-content">
+      <div id="doc-loader" style="display: none; color: var(--accent-cyan);">Loading document...</div>
+      <div id="doc-error" style="display: none; color: #ef4444; border: 1px solid #ef4444; padding: 1rem; border-radius: 8px;">
+        Error loading document. Please check your path.
+      </div>
+      <article class="m3tal-markdown" id="markdown-content">
+        <!-- Markdown content rendered here -->
+      </article>
+    </main>
+
+  </div>
+
+  <!-- Global Footer -->
+  <div id="m3tal-global-footer"></div>
+
+  <!-- Client-side Markdown Router -->
+  <script>
+    const defaultDoc = '/m3tal-core/README';
+    const contentDiv = document.getElementById('markdown-content');
+    const loaderDiv = document.getElementById('doc-loader');
+    const errorDiv = document.getElementById('doc-error');
+
+    function route() {
+      // Clear previous states
+      errorDiv.style.display = 'none';
+      loaderDiv.style.display = 'block';
+      contentDiv.style.display = 'none';
+
+      // Parse hash (e.g. #/m3tal-core/README)
+      let hash = window.location.hash || '#' + defaultDoc;
+      let docPath = hash.replace(/^#/, '');
+
+      // Resolve file path (e.g. /m3tal-docs/projects/m3tal-core/README.md)
+      const filePath = `/m3tal-docs/projects${docPath}.md`;
+
+      // Update sidebar active states
+      document.querySelectorAll('.m3tal-sidebar-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      const linkId = 'link-' + docPath.replace(/^\//, '').replace(/\//g, '-');
+      const activeLink = document.getElementById(linkId);
+      if (activeLink) {
+        activeLink.classList.add('active');
+      }
+
+      fetch(filePath)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('File not found');
+          }
+          return response.text();
+        })
+        .then(markdown => {
+          loaderDiv.style.display = 'none';
+          contentDiv.style.display = 'block';
+          contentDiv.innerHTML = marked.parse(markdown);
+          // Trigger copy code button setup since new content is loaded
+          if (window.setupCopyButtons) {
+            window.setupCopyButtons();
+          }
+        })
+        .catch(err => {
+          loaderDiv.style.display = 'none';
+          errorDiv.style.display = 'block';
+          console.error(err);
+        });
+    }
+
+    window.addEventListener('hashchange', route);
+    window.addEventListener('load', route);
+  </script>
+</body>
+</html>
