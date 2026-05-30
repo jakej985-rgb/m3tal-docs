@@ -5,16 +5,37 @@ Autonomous, self-healing media automation platform.
 ## 🏗 Architecture (Source Services)
 | Service | Type | Path |
 |---------|------|------|
-| api | Go package | [internal/api](./internal/api) |
-| auth | Go package | [internal/auth](./internal/auth) |
-| config | Go package | [internal/config](./internal/config) |
-| containers | Go package | [internal/containers](./internal/containers) |
-| doctor | Go package | [internal/doctor](./internal/doctor) |
-| engine | Go package | [internal/engine](./internal/engine) |
-| health | Go package | [internal/health](./internal/health) |
-| preflight | Go package | [internal/preflight](./internal/preflight) |
-| queue | Go package | [internal/queue](./internal/queue) |
-| registry | Go package | [internal/registry](./internal/registry) |
+| m3tal (cli) | CLI binary | [cli](./cli) |
+| m3tal-api | API binary | [api/cmd](./api/cmd) |
+| agents | Core package | [core/agents](./core/agents) |
+| auth | Core package | [core/auth](./core/auth) |
+| compose | Core package | [core/compose](./core/compose) |
+| config | Core package | [core/config](./core/config) |
+| containers | Core package | [core/containers](./core/containers) |
+| doctor | Core package | [core/doctor](./core/doctor) |
+| engine | Core package | [core/engine](./core/engine) |
+| events | Core package | [core/events](./core/events) |
+| health | Core package | [core/health](./core/health) |
+| networking | Core package | [core/networking](./core/networking) |
+| orchestrator | Core package | [core/orchestrator](./core/orchestrator) |
+| plugins | Core package | [core/plugins](./core/plugins) |
+| preflight | Core package | [core/preflight](./core/preflight) |
+| queue | Core package | [core/queue](./core/queue) |
+| registry | Core package | [core/registry](./core/registry) |
+| routing | Core package | [core/routing](./core/routing) |
+| services | Core package | [core/services](./core/services) |
+| state | Core package | [core/state](./core/state) |
+| system | Core package | [core/system](./core/system) |
+| client | Shared package | [pkg/client](./pkg/client) |
+| cmdutil | Shared package | [pkg/cmdutil](./pkg/cmdutil) |
+| config | Shared package | [pkg/config](./pkg/config) |
+| models | Shared package | [pkg/models](./pkg/models) |
+| output | Shared package | [pkg/output](./pkg/output) |
+| system | Shared package | [pkg/system](./pkg/system) |
+| middleware | API package | [api/middleware](./api/middleware) |
+| tui | Terminal UI | [tui](./tui) |
+| webui | Web UI | [webui](./webui) |
+| gui | Desktop UI | [gui](./gui) |
 | plugins | Deploy artifact | [deploy/plugins](./deploy/plugins) |
 | stack | Deploy artifact | [deploy/stack](./deploy/stack) |
 | github.com/jakej985-rgb/m3tal-core | Go module | [go.mod](./go.mod) |
