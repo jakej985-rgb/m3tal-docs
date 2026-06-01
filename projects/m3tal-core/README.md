@@ -9,7 +9,6 @@ Autonomous, self-healing media automation platform.
 | m3tal-api | API binary | [api/cmd](./api/cmd) |
 | agents | Core package | [core/agents](./core/agents) |
 | auth | Core package | [core/auth](./core/auth) |
-| compose | Core package | [core/compose](./core/compose) |
 | config | Core package | [core/config](./core/config) |
 | containers | Core package | [core/containers](./core/containers) |
 | doctor | Core package | [core/doctor](./core/doctor) |
@@ -21,16 +20,17 @@ Autonomous, self-healing media automation platform.
 | plugins | Core package | [core/plugins](./core/plugins) |
 | preflight | Core package | [core/preflight](./core/preflight) |
 | queue | Core package | [core/queue](./core/queue) |
-| registry | Core package | [core/registry](./core/registry) |
 | routing | Core package | [core/routing](./core/routing) |
 | services | Core package | [core/services](./core/services) |
 | state | Core package | [core/state](./core/state) |
 | system | Core package | [core/system](./core/system) |
 | client | Shared package | [pkg/client](./pkg/client) |
 | cmdutil | Shared package | [pkg/cmdutil](./pkg/cmdutil) |
+| compose | Shared package | [pkg/compose](./pkg/compose) |
 | config | Shared package | [pkg/config](./pkg/config) |
 | models | Shared package | [pkg/models](./pkg/models) |
 | output | Shared package | [pkg/output](./pkg/output) |
+| registry | Shared package | [pkg/registry](./pkg/registry) |
 | system | Shared package | [pkg/system](./pkg/system) |
 | middleware | API package | [api/middleware](./api/middleware) |
 | tui | Terminal UI | [tui](./tui) |
