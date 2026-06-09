@@ -10,9 +10,8 @@ Autonomous, self-healing media automation platform.
 | agents | Core package | [core/agents](./core/agents) |
 | auth | Core package | [core/auth](./core/auth) |
 | config | Core package | [core/config](./core/config) |
-| containers | Core package | [core/containers](./core/containers) |
+| docker | Core package | [core/docker](./core/docker) |
 | doctor | Core package | [core/doctor](./core/doctor) |
-| engine | Core package | [core/engine](./core/engine) |
 | events | Core package | [core/events](./core/events) |
 | health | Core package | [core/health](./core/health) |
 | networking | Core package | [core/networking](./core/networking) |
@@ -20,10 +19,11 @@ Autonomous, self-healing media automation platform.
 | plugins | Core package | [core/plugins](./core/plugins) |
 | preflight | Core package | [core/preflight](./core/preflight) |
 | queue | Core package | [core/queue](./core/queue) |
-| routing | Core package | [core/routing](./core/routing) |
 | services | Core package | [core/services](./core/services) |
+| stack | Core package | [core/stack](./core/stack) |
 | state | Core package | [core/state](./core/state) |
 | system | Core package | [core/system](./core/system) |
+| traefik | Core package | [core/traefik](./core/traefik) |
 | client | Shared package | [pkg/client](./pkg/client) |
 | cmdutil | Shared package | [pkg/cmdutil](./pkg/cmdutil) |
 | compose | Shared package | [pkg/compose](./pkg/compose) |
