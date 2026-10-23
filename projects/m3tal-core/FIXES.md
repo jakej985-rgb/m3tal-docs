@@ -1,37 +1,53 @@
-**Verdict: FAILED**
+## Verdict: FAILED
 
-The README is missing critical information required for successful deployment and operation of M3TAL, specifically regarding the Docker dependency and the full deployment lifecycle.
+The README is missing critical information and contains some inaccuracies or potentially confusing statements when compared to the GROUND TRUTH. Several BLOCKER issues prevent a user from successfully deploying and operating M3TAL.
 
 ---
 
-**Issues:**
+## Issues:
 
-1.  **BLOCKER**: Docker Dependency Missing
-    *   **Description**: The README mentions Docker Engine and Docker Compose V2 are required but does not explicitly state this in the context of installation steps or within the main prerequisites. The GROUND TRUTH states this is a BLOCKER.
-    *   **Location in README**: "Prerequisites" section.
-    *   **Required Fix**: Clearly state the requirement for Docker Engine and Docker Compose V2 as a BLOCKER in the prerequisites section.
+1.  **BLOCKER - APT Installation Missing Keyring/Repo Commands:**
+    *   **Description:** The README states "APT installation: README MUST show the 3-command keyring+repo+install block." While the README *does* show these commands, it does not specify where `sudo apt update` should be run. This can lead to confusion for users, as they might not realize the update is necessary after adding the repository. The ground truth explicitly shows the 3-command block as:
+        ```bash
+        curl -fsSL https://jakej985-rgb.github.io/m3tal-apt-key/public.key | sudo gpg --dearmor -o /usr/share/keyrings/m3tal-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/m3tal-archive-keyring.gpg] https://jakej985-rgb.github.io/m3tal-apt-key stable main" | sudo tee /etc/apt/sources.list.d/m3tal.list
+        sudo apt update && sudo apt install -y m3tal
+        ```
+        The README presents these as three distinct commands but groups `apt update` and `apt install` together in the third step, which is technically correct but could be clearer for less experienced users.
+    *   **Required Fix:** Clarify the order and necessity of `sudo apt update` immediately after adding the repository. It would be beneficial to explicitly state that `sudo apt update` should be run before `sudo apt install -y m3tal`.
 
-2.  **BLOCKER**: Deployment Lifecycle Explanation Incomplete
-    *   **Description**: While the README mentions `m3tal up` and the `/docker` directory, it doesn't fully explain how stacks work or the relationship between `/docker` and `/opt/m3tal/stack/` as the canonical source. The GROUND TRUTH indicates this is a BLOCKER. The explanation of "Adding a New Stack" is good, but the fundamental understanding of how M3TAL orchestrates multiple compose files and their source isn't fully clear.
-    *   **Location in README**: "Deployment Lifecycle" section.
-    *   **Required Fix**: Clarify that M3TAL uses `docker compose` internally on all `*-compose.yml` files within `/docker/`, and that `/docker` is a symlink to `/opt/m3tal/stack/` which is the true source of truth for stack files. Explicitly mention how `m3tal up` aggregates these compose files.
+2.  **BLOCKER - Docker Dependency Statement:**
+    *   **Description:** The README states "Docker Engine + Docker Compose V2 are required." However, the ground truth clearly states "M3TAL IS a Docker orchestrator. It uses Docker Engine + Docker Compose V2 internally." The README's statement is sufficient on its own, but it doesn't *fully* convey the *internal* reliance as strongly as the ground truth. A user might infer that Docker Compose V2 is just *a* requirement, not the core engine of M3TAL's orchestration.
+    *   **Required Fix:** Rephrase the prerequisite to emphasize that M3TAL *uses* Docker Engine and Docker Compose V2 as its internal orchestration mechanism, rather than just stating them as requirements.
 
-3.  **BLOCKER**: Traefik Routing Explanation Incomplete
-    *   **Description**: The README correctly identifies Traefik as the HTTP gateway and mentions service exposure via labels and dynamic config. However, it doesn't explicitly link Traefik's functionality to the `DASHBOARD_EXPOSE_MODE` setting, which is a core part of how users access services. The GROUND TRUTH indicates this is a BLOCKER.
-    *   **Location in README**: "Traefik Gateway" section.
-    *   **Required Fix**: Explicitly connect how Traefik is configured and used based on the `DASHBOARD_EXPOSE_MODE` setting. Detail how `m3tal-compose.traefik.yml` and `m3tal-compose.local.yml` interact with Traefik (or bypass it).
+3.  **BLOCKER - Deployment Lifecycle Explanation:**
+    *   **Description:** The README explains that `m3tal up` runs `docker compose` across `*-compose.yml` files in `/docker/` and that `/docker` is a symlink to `/opt/m3tal/stack/`. It also mentions adding new compose files to `/docker/`. However, it does not explicitly mention that `m3tal dash up` manages the dashboard container specifically, which is a key aspect of the deployment lifecycle described in the ground truth.
+    *   **Required Fix:** Add a note that `m3tal dash up` is used for managing the dashboard container independently of `m3tal up`.
 
-4.  **WARNING**: Port Table Incomplete
-    *   **Description**: The README's port table lists ports 80, 8080, 8081, and 8082. While these are the primary M3TAL ports, it could be more precise about their accessibility (e.g., public vs. host-local). The GROUND TRUTH lists these same ports as expected.
-    *   **Location in README**: "Port Map" section.
-    *   **Required Fix**: Refine the "Access" column in the "Port Map" table to more clearly distinguish between public, host-local, and internal container access where relevant.
+4.  **BLOCKER - Traefik Routing Explanation:**
+    *   **Description:** The README states "Traefik is the HTTP gateway and how services get exposed (labels or dynamic config)." It correctly explains that Traefik uses labels and dynamic configuration files. However, it doesn't explicitly mention that Traefik's routing configuration is primarily managed via its static configuration (`traefik.yml`) and dynamic configurations loaded from the `/docker/dynamic/` directory (which maps to `/opt/m3tal/stack/dynamic/`). The ground truth provides concrete examples of this structure.
+    *   **Required Fix:** Explicitly mention that Traefik's static configuration is in `traefik.yml` and dynamic configurations are loaded from the `/docker/dynamic/` directory.
 
-5.  **WARNING**: Tone Inconsistent
-    *   **Description**: While mostly technical, some phrasing like "M3TAL System Documentation" and "The M3TAL system comprises the following core components" leans slightly towards marketing copy rather than pure technical documentation.
-    *   **Location in README**: "Overview", "Components" sections.
-    *   **Required Fix**: Adjust phrasing to be more direct and technical. For example, "M3TAL System" can be "M3TAL System Overview".
+5.  **WARNING - Port Table Missing Port 8080:**
+    *   **Description:** The README's "Port Map" table lists ports 80, 8081, and 8082. It is missing port 8080, which is the host-local port for the M3TAL API daemon according to the ground truth.
+    *   **Required Fix:** Add port 8080 to the "Port Map" table with its corresponding service ("M3TAL API daemon (Go)") and access level ("Host-local").
 
-6.  **SUGGESTION**: Quick Demo Clarity
-    *   **Description**: The "Quick Demo" section is good but could be slightly more explicit about what happens after running `m3tal dash up` or `m3tal up` regarding accessibility and configuration.
-    *   **Location in README**: "Quick Demo" section.
-    *   **Required Fix**: For `m3tal dash up`, explicitly mention how to access the dashboard based on `DASHBOARD_EXPOSE_MODE` (e.g., "If `DASHBOARD_EXPOSE_MODE=local`, the dashboard is accessible at `http://HOST_IP:8082`. If `DASHBOARD_EXPOSE_MODE=traefik`, access it via `http://dash.DOMAIN`."). For `m3tal up`, reinforce that this deploys all stacks, including Traefik if needed for domain-based access.
+6.  **WARNING - Service Management Detail:**
+    *   **Description:** The README mentions `systemctl` for managing `m3tal-api.service` and lists status, restart, and log commands. However, it doesn't explicitly state that `m3tal-api.service` is the *API daemon* service.
+    *   **Required Fix:** Clarify that `m3tal-api.service` specifically refers to the M3TAL API daemon.
+
+7.  **WARNING - Firewall Note Incompleteness:**
+    *   **Description:** The README reminds users to allow port 80 in `ufw/iptables` if Traefik is used for public access. However, it also mentions port 443 if HTTPS is configured, which is good. The ground truth also shows that Traefik is bound to ports 80 and 443. The README could be more explicit about *which* ports Traefik listens on if HTTPS is enabled.
+    *   **Required Fix:** Explicitly state that if HTTPS is configured, port 443 should also be opened in the firewall.
+
+8.  **WARNING - Tone of "Quick Demo" Section:**
+    *   **Description:** The "Quick Demo" section uses phrases like "automatically pull its latest images and apply configuration overrides." This leans slightly towards marketing copy rather than pure technical documentation. While not a major blocker, it could be more direct.
+    *   **Required Fix:** Rephrase the "Quick Demo" section to be more direct and less descriptive, focusing on the actions the commands perform. For example, instead of "automatically pull its latest images and apply configuration overrides," state "deploys the dashboard container using the latest image and applies relevant configuration overrides."
+
+9.  **SUGGESTION - Quick Start Section Completeness:**
+    *   **Description:** The README has a "Quick Demo" section with commands. However, it's not a full "Quick Start" guide. A user might expect a more comprehensive step-by-step process for a minimal, functional deployment, including initial configuration steps like setting up `.env`.
+    *   **Required Fix:** Expand the "Quick Demo" section into a proper "Quick Start" guide. This should include steps for:
+        *   Initial configuration (e.g., running `m3tal config wizard` or providing a minimal `.env` example).
+        *   Running `m3tal dash up` for the dashboard.
+        *   Running `m3tal up` for the core system.
+        *   Verifying the deployment (e.g., accessing the dashboard).
