@@ -1,54 +1,43 @@
-## M3TAL README Audit
+## Audit Verdict
 
-**Verdict: FAILED**
+**FAILED**
 
-The README is missing critical information required for installation and operation, and contains several inaccuracies and omissions when compared to the GROUND TRUTH.
+The README.md is critically incomplete for new users attempting to install and operate the M3TAL platform. Multiple essential pieces of information, classified as `BLOCKER`s, are entirely missing or incorrectly presented, making successful deployment impossible without prior knowledge of the system's internal workings or by consulting the Ground Truth. The existing "Deployment" section is misleading.
 
----
+## Issue List
 
-### Issue List:
+### BLOCKERS
 
-1.  **BLOCKER: APT Installation Block**
-    *   **Description:** The README does not provide the necessary three-command sequence (keyring, repo, install) for APT installation. This is a fundamental blocker for users who expect to install M3TAL via their package manager.
-    *   **Required Fix:** Include the complete APT installation block as provided in the GROUND TRUTH.
+1.  **Missing APT Installation Instructions**
+    *   **Description:** The README provides an incorrect deployment command (`python m3tal.py init`) and completely omits the actual APT-based installation method, including adding the GPG key and APT repository. This makes the system undeployable.
+    *   **Required Fix:** Replace the incorrect "Deployment" section with the correct 3-command APT installation block.
+2.  **Missing Docker Dependency Statement**
+    *   **Description:** While the README lists Docker images under "Infrastructure Stacks", it fails to explicitly state that Docker Engine and Docker Compose V2 are prerequisites for running M3TAL. Users would have to infer this critical dependency.
+    *   **Required Fix:** Add a dedicated section or clear statement at the beginning of the deployment instructions, explicitly listing Docker Engine and Docker Compose V2 as required dependencies.
+3.  **Missing Deployment Lifecycle Explanation**
+    *   **Description:** The README does not explain how M3TAL orchestrates Docker containers, specifically the role of the `/docker` directory (symlinked to `/opt/m3tal/stack`), the `m3tal up` command, or how to add new Docker Compose files to extend the platform. This leaves users unaware of how to manage or customize their stack.
+    *   **Required Fix:** Add a section explaining the core Docker orchestration model: how `m3tal up` works, the significance of the `/docker` directory as the stack directory, and the process for adding custom Docker Compose files.
+4.  **Missing Traefik Routing Explanation**
+    *   **Description:** The README lists Traefik and its ports but fails to explain its fundamental role as the HTTP gateway for M3TAL services. Crucially, it doesn't describe how services are exposed, either via Docker labels (e.g., for the dashboard in Traefik mode) or dynamic configuration files (e.g., for the M3TAL API). It also doesn't explain the two dashboard exposure modes (`local` vs `traefik`).
+    *   **Required Fix:** Add a section detailing Traefik's function as the HTTP gateway, explaining the concepts of host-based routing, entrypoints, and how services are exposed (Docker labels, dynamic config). Clearly document the `DASHBOARD_EXPOSE_MODE` and how it affects dashboard access.
 
-2.  **BLOCKER: Docker Dependency Statement**
-    *   **Description:** The README does not explicitly state that Docker Engine and Docker Compose V2 are required. While it mentions "Infrastructure Stacks" and uses Docker images, the explicit dependency is missing.
-    *   **Required Fix:** Add a clear statement in the README that Docker Engine and Docker Compose V2 are prerequisites for running M3TAL.
+### WARNINGS
 
-3.  **BLOCKER: Deployment Lifecycle Explanation**
-    *   **Description:** The README's deployment section is insufficient. It mentions `python m3tal.py init` but does not explain how M3TAL orchestrates services via Docker, the role of the `/docker` directory (symlinked to `/opt/m3tal/stack/`), how `m3tal up` works across Compose files, or how to add new compose files.
-    *   **Required Fix:** Elaborate on the deployment lifecycle. Explain that M3TAL is a Docker orchestrator, that the `/docker` directory is the user-facing entry point to the stack configuration, and that `m3tal up` aggregates and runs all `*-compose.yml` files within this directory. Mention the existence and purpose of the `/opt/m3tal/stack/` directory and the symlink.
+5.  **Incomplete Port Information**
+    *   **Description:** The README lists various ports through environment variables and raw Docker mappings but does not provide a consolidated, descriptive table explaining what each exposed port (80, 8080, 8081, 8082) is for from a user's perspective.
+    *   **Required Fix:** Add a clear "Port Map" table, similar to the Ground Truth, listing each port and its associated service/purpose (e.g., 80 for Traefik HTTP, 8080 for M3TAL Go API, 8081 for Traefik Dashboard (local-only), 8082 for M3TAL Dashboard container).
+6.  **Missing Service Management Instructions**
+    *   **Description:** The README makes no mention of how to manage the `m3tal-api.service` daemon using `systemctl` (status, restart, logs). This is crucial for troubleshooting and operational control.
+    *   **Required Fix:** Add a "Service Management" section detailing how to use `systemctl` commands (e.g., `status`, `restart`, `journalctl`) for the `m3tal-api.service`.
+7.  **Missing Firewall Configuration Reminder**
+    *   **Description:** The README lacks a reminder for users to configure their host firewall (e.g., ufw, iptables) to allow inbound connections on necessary ports, especially port 80 for Traefik.
+    *   **Required Fix:** Include a "Firewall Configuration" note advising users to open required ports (at least 80) in their host firewall.
+8.  **Inappropriate Tone**
+    *   **Description:** The introductory line "Autonomous, self-healing media automation platform." is marketing copy rather than concise technical documentation. While minor, it sets an initial tone that is not purely technical.
+    *   **Required Fix:** Adjust the introductory statement to be more directly informative and less marketing-oriented, suitable for technical documentation.
 
-4.  **BLOCKER: Traefik Routing Explanation**
-    *   **Description:** The README mentions Traefik in the "Routing Stack" but does not explain *how* services are exposed through it. It's unclear if this is via labels, dynamic configuration files, or another mechanism.
-    *   **Required Fix:** Clearly explain that Traefik acts as the HTTP gateway and how services are exposed. Detail that this is typically achieved using Docker labels (e.g., `traefik.enable=true`, `traefik.http.routers.service.rule=...`) or dynamic configuration files within Traefik's configuration. Reference the `traefik.yml` and `dynamic` directory from the GROUND TRUTH.
+### SUGGESTIONS
 
-5.  **WARNING: Missing Port Table**
-    *   **Description:** While the "Infrastructure Stacks" section lists ports for individual services, a consolidated port table that explicitly lists ports 80, 8080, 8081, and 8082 for general access and management is missing.
-    *   **Required Fix:** Add a dedicated "Ports" section or table that lists these common ports and their purpose (e.g., 80 for Traefik public, 8080 for Traefik dashboard (if exposed), 8081 for internal API, 8082 for M3TAL Dashboard). The GROUND TRUTH provides a good example of this.
-
-6.  **WARNING: Service Management Clarity**
-    *   **Description:** The README does not mention `systemctl` for managing the `m3tal-api.service`. While the API runs in Docker, the systemd service is the primary way to manage the daemon process on the host.
-    *   **Required Fix:** Add a note mentioning that `m3tal-api.service` is managed via `systemctl` and provide basic commands like `systemctl status m3tal-api.service`, `systemctl restart m3tal-api.service`, and `journalctl -u m3tal-api.service -f`.
-
-7.  **WARNING: Firewall Reminder Missing**
-    *   **Description:** The README does not include a reminder for users to ensure port 80 is open in their firewall (e.g., `ufw`, `iptables`) for external access.
-    *   **Required Fix:** Add a brief note advising users to allow incoming traffic on port 80 through their host firewall.
-
-8.  **WARNING: Marketing Copy Tone**
-    *   **Description:** The introductory sentence "Autonomous, self-healing media automation platform" leans towards marketing copy rather than purely technical documentation. While a brief intro is fine, the overall tone should remain technical.
-    *   **Required Fix:** Adjust the introductory sentence to be more descriptive of the system's function from a technical standpoint, if possible, or ensure the rest of the document remains strictly technical.
-
-9.  **SUGGESTION: Quick Start Section**
-    *   **Description:** The README lacks a "Quick Start" or "Getting Started" section that would allow a new user to perform a basic installation and get a service running quickly. The current deployment section is too high-level and relies on an external script.
-    *   **Required Fix:** Add a "Quick Start" section that walks users through the essential steps: installing M3TAL (using the correct APT block), performing initial configuration (e.g., `m3tal config wizard`), and deploying a basic stack (e.g., `m3tal up`).
-
----
-
-**Additional Notes:**
-
-*   The "Architecture (Source Services)" section seems to list internal Go module paths rather than user-relevant architectural components. This is not a direct audit failure against the criteria but could be confusing.
-*   The "Environment Configuration" table is a good start but should ideally be linked to the `.env` file where these variables are actually set and managed.
-*   The "Dashboard Access" modes described in the GROUND TRUTH are not reflected in the README at all. This is a significant omission as it dictates how users will access the dashboard. The README currently only implies a single mode.
-*   The README's "Deployment" section mentioning `python m3tal.py init` is incorrect based on the GROUND TRUTH, which states M3TAL is installed via APT and uses `m3tal up` for deployment. The `m3tal.py` script and `init` command are not part of the documented installation process.
+9.  **Missing Working Quick Start Section**
+    *   **Description:** The README currently lacks a functional "Quick Start" or "Getting Started" section that guides a user from a fresh system to a running M3TAL instance with minimal steps. The existing "Deployment" section is incorrect and insufficient.
+    *   **Required Fix:** Create a comprehensive "Quick Start" section that walks users through the initial APT installation, Docker dependency checks, and the essential commands to get M3TAL up and running for the first time, including initial dashboard access.
