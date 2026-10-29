@@ -1,232 +1,252 @@
 # Environment Variable Reference
 
-All M3TAL environment variables are read from the primary configuration file, `/etc/m3tal/.env`. This file is used by both the M3TAL CLI binary and all Docker Compose stacks (via the `--env-file` flag), ensuring consistent configuration across your M3TAL system.
-
-The `m3tal config wizard` command provides an interactive way to manage these variables, while `m3tal config set KEY value` allows direct modification.
+All M3TAL environment variables are read from the primary configuration file located at `/etc/m3tal/.env`. This file is managed by the `m3tal config wizard` command. Both the `m3tal` CLI binary and all Docker Compose stacks utilize these variables, passed via the `--env-file /etc/m3tal/.env` flag, ensuring a unified and consistent configuration across the entire M3TAL ecosystem.
 
 ---
 
-## Quick Reference Table
+## Quick Reference
 
-| Name                   | Default                  | Description                                                                                                                                                                                                | Used By                                                                         |
-| :--------------------- | :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| `API_PORT`             | `5050`                   | Port the M3TAL API daemon is expected to be accessible on by internal components like the Dashboard.                                                                                                        | `m3tal-dashboard`                                                               |
-| `DASHBOARD_PORT`       | `8082`                   | Port for the M3TAL Dashboard container.                                                                                                                                                                    | `m3tal-dashboard`, `CLI binary`                                                 |
-| `DASHBOARD_EXPOSE_MODE`| `local`                  | Controls how the M3TAL Dashboard is exposed (direct port or via Traefik).                                                                                                                                  | `CLI binary`, `m3tal-dashboard`                                                 |
-| `HTTP_PORT`            | `8080`                   | Port the primary M3TAL API daemon listens on for incoming requests (e.g., from Traefik).                                                                                                                   | `m3tal-api.service`, `Traefik gateway`                                          |
-| `STATE_DIR`            | `./state`                | Directory where the M3TAL API stores its SQLite state database and other runtime files.                                                                                                                    | `m3tal-api.service`, `m3tal-dashboard`                                          |
-| `LOG_LEVEL`            | `info`                   | Minimum logging level for the M3TAL API daemon.                                                                                                                                                            | `m3tal-api.service`                                                             |
-| `DASHBOARD_SECRET`     | `change_me_immediately`  | Secret key for M3TAL Dashboard session management and encryption.                                                                                                                                          | `m3tal-dashboard`                                                               |
-| `API_TOKEN`            | `change_me_api_token`    | Authentication token for programmatic access to the M3TAL API.                                                                                                                                             | `CLI binary`, `m3tal-dashboard`                                                 |
-| `ADMIN_PASSWORD`       | `admin_pass`             | Initial password for the default 'admin' user of the M3TAL Dashboard.                                                                                                                                      | `m3tal-dashboard`                                                               |
-| `NETWORK_NAME`         | `m3tal`                  | Name of the Docker network used by M3TAL's control plane services and user stacks.                                                                                                                         | All M3TAL compose stacks                                                        |
-| `LOCAL_IP`             | `127.0.0.1`              | IP address for host-level services, often `host.docker.internal` resolution.                                                                                                                               | `Traefik gateway`, user stacks                                                  |
-| `DOMAIN`               | `localhost`              | Base domain name for M3TAL services exposed via Traefik (e.g., `dash.DOMAIN`, `api.DOMAIN`).                                                                                                              | `Traefik gateway`, `m3tal-dashboard`                                            |
-| `VPN_USER`             | `user`                   | Username for VPN client authentication.                                                                                                                                                                    | VPN client container                                                            |
-| `VPN_PASSWORD`         | `password`               | Password for VPN client authentication.                                                                                                                                                                    | VPN client container                                                            |
-| `BASE_STORAGE_PATH`    | `./data`                 | The root directory for all M3TAL-managed media and configuration data.                                                                                                                                     | `m3tal-dashboard`, `CLI binary`, user stacks                                    |
-| `MEDIA_PATH`           | `./data/media`           | Path within `BASE_STORAGE_PATH` designated for media files.                                                                                                                                                | `m3tal-dashboard`, user stacks                                                  |
-| `CONFIG_PATH`          | `./data/config`          | Path within `BASE_STORAGE_PATH` for configuration files (e.g., `users.json`).                                                                                                                             | `m3tal-dashboard`, user stacks                                                  |
-| `DOWNLOADS_PATH`       | `./data/downloads`       | Path within `BASE_STORAGE_PATH` for downloaded content.                                                                                                                                                    | User stacks                                                                     |
-| `PUID`                 | `1000`                   | User ID (UID) that Docker containers should run as, ensuring correct file permissions.                                                                                                                     | All M3TAL compose stacks                                                        |
-| `PGID`                 | `1000`                   | Group ID (GID) that Docker containers should run as, ensuring correct file permissions.                                                                                                                    | All M3TAL compose stacks                                                        |
-| `TZ`                   | `America/Denver`         | Timezone for containers to ensure correct timestamps and scheduling.                                                                                                                                       | All M3TAL compose stacks                                                        |
-| `TRAEFIK_WEB_PORT`     | `80`                     | Host port for Traefik's HTTP entry point.                                                                                                                                                                  | `Traefik gateway`                                                               |
-| `TRAEFIK_WEBHTTPS_PORT`| `443`                    | Host port for Traefik's HTTPS entry point.                                                                                                                                                                 | `Traefik gateway`                                                               |
-| `TRAEFIK_DASHBOARD_PORT`| `8080`                  | Internal port for the Traefik dashboard, exposed on `127.0.0.1:8081` on the host.                                                                                                                          | `Traefik gateway`                                                               |
-| `DEBUG_MODE`           | `false`                  | Enables verbose logging and debug features across M3TAL components.                                                                                                                                        | `CLI binary`, `m3tal-api.service`, `m3tal-dashboard`                            |
-| `METRICS_ENABLED`      | `true`                   | Enables or disables the exposure of Prometheus-compatible metrics endpoints.                                                                                                                               | `m3tal-api.service`, `m3tal-dashboard`                                          |
+| Name                    | Default Value           | Description                                                                                             |
+| :---------------------- | :---------------------- | :------------------------------------------------------------------------------------------------------ |
+| `API_PORT`              | `5050`                  | Port the dashboard expects the M3TAL API daemon to listen on.                                           |
+| `DASHBOARD_PORT`        | `8082`                  | Port the M3TAL Dashboard container listens on internally.                                               |
+| `DASHBOARD_EXPOSE_MODE` | `local`                 | Controls how the M3TAL Dashboard is exposed: `local` (direct port) or `traefik` (via domain).           |
+| `HTTP_PORT`             | `8080`                  | Port the M3TAL API daemon listens on for incoming requests.                                             |
+| `STATE_DIR`             | `./state`               | Internal path within the Dashboard container for state data.                                            |
+| `LOG_LEVEL`             | `info`                  | Minimum logging level for the CLI and API daemon.                                                       |
+| `DASHBOARD_SECRET`      | `change_me_immediately` | Secret key for securing dashboard sessions. **Auto-generated on `m3tal init`.**                         |
+| `API_TOKEN`             | `change_me_api_token`   | Token for authenticating API daemon requests. **Auto-generated on `m3tal init`.**                       |
+| `ADMIN_PASSWORD`        | `admin_pass`            | Default password for the initial dashboard admin user.                                                  |
+| `NETWORK_NAME`          | `m3tal`                 | Default name for the internal Docker network used by M3TAL services.                                    |
+| `LOCAL_IP`              | `127.0.0.1`             | Local IP address for internal network resolution.                                                       |
+| `DOMAIN`                | `localhost`             | Primary domain for Traefik routing and service exposure.                                                |
+| `VPN_USER`              | `user`                  | Username for a user-defined VPN service.                                                                |
+| `VPN_PASSWORD`          | `password`              | Password for a user-defined VPN service.                                                                |
+| `BASE_STORAGE_PATH`     | `./data`                | Base directory for all persistent M3TAL data volumes. **Defaults to `/mnt` in production.**             |
+| `MEDIA_PATH`            | `./data/media`          | Path for media files, relative to `BASE_STORAGE_PATH`.                                                  |
+| `CONFIG_PATH`           | `./data/config`         | Path for configuration files, relative to `BASE_STORAGE_PATH`.                                          |
+| `DOWNLOADS_PATH`        | `./data/downloads`      | Path for downloaded content, relative to `BASE_STORAGE_PATH`.                                           |
+| `PUID`                  | `1000`                  | User ID to use for running container processes.                                                         |
+| `PGID`                  | `1000`                  | Group ID to use for running container processes.                                                        |
+| `TZ`                    | `America/Denver`        | Timezone setting for all M3TAL containers.                                                              |
+| `TRAEFIK_WEB_PORT`      | `80`                    | Port Traefik listens on for HTTP traffic.                                                               |
+| `TRAEFIK_WEBHTTPS_PORT` | `443`                   | Port Traefik listens on for HTTPS traffic.                                                              |
+| `TRAEFIK_DASHBOARD_PORT`| `8080`                  | Internal port for Traefik's own dashboard.                                                              |
+| `DEBUG_MODE`            | `false`                 | Enables verbose debug logging and features.                                                             |
+| `METRICS_ENABLED`       | `true`                  | Enables collection and exposure of system metrics.                                                      |
 
 ---
 
-## Environment Variable Details
+## Detailed Reference
 
 ### Core Variables
 
-These variables control fundamental aspects of the M3TAL system, including logging, debugging, and the location of the core state database.
+These variables control fundamental aspects of M3TAL's operation, logging, and debugging.
 
-*   **`LOG_LEVEL`**
-    *   **Description:** Sets the minimum logging level for the M3TAL API daemon. Valid levels typically include `debug`, `info`, `warn`, `error`, `fatal`.
-    *   **Default Value:** `info`
-    *   **Example Value:** `debug`
-    *   **Used By:** `m3tal-api.service`
+#### `STATE_DIR`
 
-*   **`DEBUG_MODE`**
-    *   **Description:** When set to `true`, enables verbose logging and additional debugging features across M3TAL components, useful for troubleshooting.
-    *   **Default Value:** `false`
-    *   **Example Value:** `true`
-    *   **Used By:** `CLI binary`, `m3tal-api.service`, `m3tal-dashboard`
+*   **Description:** Specifies the internal path within the M3TAL Dashboard container where its state database and related files are stored. For the M3TAL API daemon, the state database is typically located at `/var/lib/m3tal/state.db` on the host. This variable primarily affects the dashboard's internal state management.
+*   **Default Value:** `./state`
+*   **Example Value:** `/docker/state`
+*   **Used By:** M3TAL CLI (for internal operations and local testing), M3TAL Dashboard container (as the internal path for its state data).
 
-*   **`METRICS_ENABLED`**
-    *   **Description:** Controls whether Prometheus-compatible metrics endpoints are exposed by M3TAL services, allowing for monitoring with tools like Prometheus.
-    *   **Default Value:** `true`
-    *   **Example Value:** `false`
-    *   **Used By:** `m3tal-api.service`, `m3tal-dashboard`
+#### `LOG_LEVEL`
 
-*   **`STATE_DIR`**
-    *   **Description:** Specifies the directory where the M3TAL API daemon stores its SQLite state database (`state.db`) and other runtime data. This path is volume-mounted into the dashboard container.
-    *   **Default Value:** `./state`
-    *   **Example Value:** `/var/lib/m3tal`
-    *   **Used By:** `m3tal-api.service`, `m3tal-dashboard`
+*   **Description:** Sets the minimum logging severity level for the M3TAL CLI and API daemon. Valid values typically include `debug`, `info`, `warn`, `error`, `fatal`. Setting to `debug` provides the most verbose output.
+*   **Default Value:** `info`
+*   **Example Value:** `debug`
+*   **Used By:** M3TAL CLI, M3TAL API daemon.
 
-*   **`API_PORT`**
-    *   **Description:** The port that internal M3TAL components, such as the Dashboard, are configured to access the M3TAL API daemon on.
-    *   **Default Value:** `5050`
-    *   **Example Value:** `5050`
-    *   **Used By:** `m3tal-dashboard` (via its `GO_API_URL` environment variable)
+#### `DEBUG_MODE`
 
-*   **`HTTP_PORT`**
-    *   **Description:** The port on which the primary M3TAL API daemon (`m3tal-api.service`) listens for incoming HTTP requests from external sources, such as Traefik.
-    *   **Default Value:** `8080`
-    *   **Example Value:** `8080`
-    *   **Used By:** `m3tal-api.service`, `Traefik gateway` (for routing `api.DOMAIN` to the API daemon)
+*   **Description:** When set to `true`, this variable enables verbose logging, additional debug endpoints, and potentially development-specific features across M3TAL components. This is useful for troubleshooting.
+*   **Default Value:** `false`
+*   **Example Value:** `true`
+*   **Used By:** M3TAL CLI, M3TAL API daemon, M3TAL Dashboard container.
+
+#### `METRICS_ENABLED`
+
+*   **Description:** Controls whether system and application metrics are collected and exposed by the M3TAL API daemon. Set to `false` to disable metrics reporting.
+*   **Default Value:** `true`
+*   **Example Value:** `false`
+*   **Used By:** M3TAL CLI, M3TAL API daemon.
 
 ### Authentication Variables
 
-These variables secure access to the M3TAL API and Dashboard.
+These variables are crucial for securing access to the M3TAL API and Dashboard.
 
-*   **`DASHBOARD_SECRET`**
-    *   **Description:** A long, random string used by the M3TAL Dashboard for secure session management, encryption, and other cryptographic operations.
-    *   **Default Value:** `change_me_immediately`
-    *   **Example Value:** `a_very_long_and_random_string_of_characters`
-    *   **Used By:** `m3tal-dashboard`
-    *   **Note:** This variable is **auto-generated** on first `m3tal init`. Users should **NOT** set it manually unless performing a secret rotation.
+#### `DASHBOARD_SECRET`
 
-*   **`API_TOKEN`**
-    *   **Description:** An authentication token used for programmatic access to the M3TAL API. This token grants administrative privileges.
-    *   **Default Value:** `change_me_api_token`
-    *   **Example Value:** `another_super_secret_jwt_token_for_api_access`
-    *   **Used By:** `CLI binary`, `m3tal-dashboard` (for API communication), external clients.
-    *   **Note:** This variable is **auto-generated** on first `m3tal init`. Users should **NOT** set it manually unless performing a token rotation.
+*   **Description:** A critical secret key used by the M3TAL Dashboard for session management, cookie signing, and other cryptographic operations. **This value is automatically generated on the first `m3tal init` and should NOT be set manually unless you are intentionally rotating the key for security purposes.**
+*   **Default Value:** `change_me_immediately`
+*   **Example Value:** `a_highly_random_long_string_of_characters_for_security`
+*   **Used By:** M3TAL Dashboard container.
 
-*   **`ADMIN_PASSWORD`**
-    *   **Description:** The initial password for the default 'admin' user of the M3TAL Dashboard. It is highly recommended to change this immediately after initial setup.
-    *   **Default Value:** `admin_pass`
-    *   **Example Value:** `MyNewStrongP@ssw0rd!`
-    *   **Used By:** `m3tal-dashboard` (for initial user creation)
+#### `API_TOKEN`
+
+*   **Description:** An authentication token used to secure communications with the M3TAL API daemon. This token must be present in API requests for successful authentication. **This value is automatically generated on the first `m3tal init` and should NOT be set manually unless you are intentionally rotating the token for security purposes.**
+*   **Default Value:** `change_me_api_token`
+*   **Example Value:** `another_super_long_random_token_string_for_api_auth`
+*   **Used By:** M3TAL API daemon (for validating incoming requests), M3TAL CLI (for sending authenticated requests to the daemon).
+
+#### `ADMIN_PASSWORD`
+
+*   **Description:** Sets the initial password for the default administrator user of the M3TAL Dashboard. After initial setup, it can be updated via the `m3tal dashpass` command.
+*   **Default Value:** `admin_pass`
+*   **Example Value:** `MySecurePassword123`
+*   **Used By:** M3TAL CLI (`m3tal dashpass` command), M3TAL Dashboard container (during initial user setup via `users.json`).
 
 ### Network Variables
 
-Variables related to Docker networking and dashboard exposure.
+These variables define how M3TAL components communicate and are exposed over the network.
 
-*   **`NETWORK_NAME`**
-    *   **Description:** Defines the name of the Docker network that M3TAL's control plane services (Dashboard, Traefik, Cloudflared) and any user-defined stacks will connect to. This creates an isolated network for inter-container communication.
-    *   **Default Value:** `m3tal`
-    *   **Example Value:** `m3tal_bridge`
-    *   **Used By:** `m3tal-dashboard`, `Traefik gateway`, `Cloudflared`, user Docker Compose stacks.
+#### `API_PORT`
 
-*   **`LOCAL_IP`**
-    *   **Description:** Specifies the IP address used for host-level services, particularly for `host.docker.internal` resolution within containers to reach host-bound services like the M3TAL API daemon.
-    *   **Default Value:** `127.0.0.1`
-    *   **Example Value:** `192.168.1.100`
-    *   **Used By:** `Traefik gateway` (when routing to host services), user Docker Compose stacks.
+*   **Description:** Specifies the port the M3TAL Dashboard expects the M3TAL API daemon to be listening on. This is the port the dashboard container uses to communicate with the host API daemon via `host.docker.internal`. While the M3TAL API daemon typically listens on port 8080, this variable allows the dashboard to connect to a different port if the API daemon's listening port is changed.
+*   **Default Value:** `5050`
+*   **Example Value:** `8080`
+*   **Used By:** M3TAL Dashboard container (as part of its `GO_API_URL` environment variable).
 
-*   **`DASHBOARD_PORT`**
-    *   **Description:** The internal port on which the M3TAL Dashboard container listens. When `DASHBOARD_EXPOSE_MODE` is `local`, this port is directly mapped to the host.
-    *   **Default Value:** `8082`
-    *   **Example Value:** `8082`
-    *   **Used By:** `m3tal-dashboard` (internal container port), `CLI binary` (for `m3tal dash up` when using local mode port binding).
+#### `DASHBOARD_PORT`
 
-*   **`DASHBOARD_EXPOSE_MODE`**
-    *   **Description:** Controls how the M3TAL Dashboard is made accessible.
-        *   `local`: Exposes the dashboard directly on `http://HOST_IP:DASHBOARD_PORT`. No Traefik required. Best for LAN-only or initial setup.
-        *   `traefik`: Configures the dashboard to be routed via Traefik at `http://dash.DOMAIN`. Requires Traefik to be running. Best for domain-based setups.
-    *   **Default Value:** `local`
-    *   **Example Value:** `traefik`
-    *   **Used By:** `CLI binary` (specifically the `m3tal dash up` command to select the correct Docker Compose override file), `m3tal-dashboard` (implicitly via selected compose file).
+*   **Description:** Defines the internal port on which the M3TAL Dashboard container listens. When `DASHBOARD_EXPOSE_MODE` is set to `local`, this internal port is directly mapped to the host's `DASHBOARD_PORT`.
+*   **Default Value:** `8082`
+*   **Example Value:** `8080`
+*   **Used By:** M3TAL Dashboard container, M3TAL CLI (`m3tal dash up` when in `local` mode).
+
+#### `DASHBOARD_EXPOSE_MODE`
+
+*   **Description:** Controls how the M3TAL Dashboard is made accessible.
+    *   `local`: Exposes the dashboard directly on `http://HOST_IP:DASHBOARD_PORT` via a direct port binding. This is best for LAN-only setups, first-time users, or local testing.
+    *   `traefik`: Configures the dashboard to be routed via the Traefik gateway at `http://dash.DOMAIN`. This requires Traefik to be running via `m3tal up`. Best for domain-based setups.
+*   **Default Value:** `local`
+*   **Example Value:** `traefik`
+*   **Used By:** M3TAL CLI (`m3tal dash up` command to select the appropriate Docker Compose override file).
+
+#### `HTTP_PORT`
+
+*   **Description:** The port on which the M3TAL API daemon (the Go binary service) listens for incoming HTTP requests from the host or other authorized clients. By default, the API daemon runs on 8080.
+*   **Default Value:** `8080`
+*   **Example Value:** `8081`
+*   **Used By:** M3TAL API daemon.
+
+#### `NETWORK_NAME`
+
+*   **Description:** Specifies the name of the external Docker network that M3TAL services use for inter-service communication. This typically refers to the `proxy` network defined in `routing-compose.yml` and `m3tal-compose.yml`, which is named `m3tal_proxy` by default based on the project folder `m3tal` and the network `proxy`. If set directly as an external network, it might just be `m3tal`.
+*   **Default Value:** `m3tal`
+*   **Example Value:** `my_custom_m3tal_network`
+*   **Used By:** All Docker Compose stacks (e.g., `m3tal-compose.yml`, `routing-compose.yml`, user-defined stacks) to connect services to a shared network.
+
+#### `LOCAL_IP`
+
+*   **Description:** An IP address used for internal network resolution within the M3TAL ecosystem, particularly for services needing to address the host machine from within Docker containers. This is less critical when `host.docker.internal:host-gateway` is utilized, but can be helpful in specific networking configurations.
+*   **Default Value:** `127.0.0.1`
+*   **Example Value:** `192.168.1.100`
+*   **Used By:** M3TAL CLI, M3TAL API daemon (for internal network binding/resolution logic).
 
 ### Storage Variables
 
-These variables define the base paths for data storage within the M3TAL ecosystem.
+These variables define the filesystem paths where M3TAL stores its persistent data.
 
-*   **`BASE_STORAGE_PATH`**
-    *   **Description:** The root directory on the host filesystem for all M3TAL-managed media, configuration, and other application data.
-    *   **Default Value:** `./data`
-    *   **Example Value:** `/mnt/m3tal_data`
-    *   **Used By:** `m3tal-dashboard`, `CLI binary`, user Docker Compose stacks (as volume mounts).
-    *   **Note:** In production deployments (e.g., on `/mnt` for dedicated storage), this variable typically defaults to `/mnt` rather than `./data` as seen in development templates. This is where media and configuration paths are mounted.
+#### `BASE_STORAGE_PATH`
 
-*   **`MEDIA_PATH`**
-    *   **Description:** A subdirectory within `BASE_STORAGE_PATH` designated for storing media files managed by M3TAL or user applications.
-    *   **Default Value:** `./data/media`
-    *   **Example Value:** `${BASE_STORAGE_PATH}/media`, `/mnt/media`
-    *   **Used By:** `m3tal-dashboard` (for media management), user Docker Compose stacks.
+*   **Description:** The foundational directory on the host filesystem where all persistent M3TAL data (media, configuration files, downloads, etc.) is stored. Docker volumes are typically mounted relative to this path. **In production deployments, this path defaults to `/mnt`**. In local development or template environments, it might default to `./data`.
+*   **Default Value:** `./data`
+*   **Example Value:** `/mnt/m3tal_data`
+*   **Used By:** M3TAL Dashboard container, all user-defined Docker Compose stacks (as the base for volume mounts).
 
-*   **`CONFIG_PATH`**
-    *   **Description:** A subdirectory within `BASE_STORAGE_PATH` for storing configuration files, such as the `users.json` file for dashboard credentials.
-    *   **Default Value:** `./data/config`
-    *   **Example Value:** `${BASE_STORAGE_PATH}/config`, `/mnt/config`
-    *   **Used By:** `m3tal-dashboard` (to access `users.json`), user Docker Compose stacks.
+#### `MEDIA_PATH`
 
-*   **`DOWNLOADS_PATH`**
-    *   **Description:** A subdirectory within `BASE_STORAGE_PATH` designated for downloaded content by various services or user applications.
-    *   **Default Value:** `./data/downloads`
-    *   **Example Value:** `${BASE_STORAGE_PATH}/downloads`, `/mnt/downloads`
-    *   **Used By:** User Docker Compose stacks (e.g., download clients).
+*   **Description:** The subdirectory, relative to `BASE_STORAGE_PATH`, designated for media content storage.
+*   **Default Value:** `./data/media`
+*   **Example Value:** `/mnt/media`
+*   **Used By:** User-defined Docker Compose stacks (for mounting media libraries).
+
+#### `CONFIG_PATH`
+
+*   **Description:** The subdirectory, relative to `BASE_STORAGE_PATH`, designated for M3TAL-related configuration files and state data. The dashboard uses this path to store its `state.db` and `users.json`.
+*   **Default Value:** `./data/config`
+*   **Example Value:** `/mnt/config`
+*   **Used By:** M3TAL Dashboard container, user-defined Docker Compose stacks.
+
+#### `DOWNLOADS_PATH`
+
+*   **Description:** The subdirectory, relative to `BASE_STORAGE_PATH`, designated for downloaded files and temporary content.
+*   **Default Value:** `./data/downloads`
+*   **Example Value:** `/mnt/downloads`
+*   **Used By:** User-defined Docker Compose stacks.
 
 ### Traefik Variables
 
-These variables configure the Traefik reverse proxy for routing external traffic.
+These variables configure the Traefik reverse proxy gateway for service exposure.
 
-*   **`DOMAIN`**
-    *   **Description:** The base domain name that M3TAL services will use when exposed via Traefik. For example, if `DOMAIN` is `example.com`, the dashboard would be accessible at `dash.example.com` and the API at `api.example.com`.
-    *   **Default Value:** `localhost`
-    *   **Example Value:** `myhome.arpa`, `example.com`
-    *   **Used By:** `Traefik gateway` (to define routing rules in `routing-compose.yml` and `dynamic/api.yml`), `m3tal-dashboard` (via `m3tal-compose.traefik.yml` labels).
-    *   **Note:** Setting this variable enables `dash.DOMAIN` and `api.DOMAIN` routes when Traefik is running.
+#### `DOMAIN`
 
-*   **`TRAEFIK_WEB_PORT`**
-    *   **Description:** The host port on which Traefik listens for incoming HTTP traffic (entry point `web`).
-    *   **Default Value:** `80`
-    *   **Example Value:** `8080` (if port 80 is already in use)
-    *   **Used By:** `Traefik gateway`
+*   **Description:** The base domain name used for Traefik routing rules. Setting this enables specific routing for `dash.DOMAIN` (M3TAL Dashboard) and `api.DOMAIN` (M3TAL API daemon), allowing access to services via friendly URLs over HTTP (and HTTPS if configured).
+*   **Default Value:** `localhost`
+*   **Example Value:** `m3tal.example.com`
+*   **Used By:** Traefik gateway (`routing-compose.yml` and dynamic configuration files like `dynamic/api.yml`), M3TAL Dashboard container (when `DASHBOARD_EXPOSE_MODE` is `traefik`), M3TAL CLI (for generating relevant URLs).
 
-*   **`TRAEFIK_WEBHTTPS_PORT`**
-    *   **Description:** The host port on which Traefik listens for incoming HTTPS traffic (entry point `websecure`, if configured).
-    *   **Default Value:** `443`
-    *   **Example Value:** `8443` (if port 443 is already in use)
-    *   **Used By:** `Traefik gateway`
+#### `TRAEFIK_WEB_PORT`
 
-*   **`TRAEFIK_DASHBOARD_PORT`**
-    *   **Description:** The internal container port for Traefik's own management dashboard. This internal port is typically mapped to `127.0.0.1:8081` on the host to prevent public exposure.
-    *   **Default Value:** `8080`
-    *   **Example Value:** `8080`
-    *   **Used By:** `Traefik gateway` (as an internal service port)
+*   **Description:** The host port on which Traefik listens for incoming HTTP (non-SSL) traffic. This is the primary entry point for web services.
+*   **Default Value:** `80`
+*   **Example Value:** `8080`
+*   **Used By:** Traefik gateway (`routing-compose.yml`).
+
+#### `TRAEFIK_WEBHTTPS_PORT`
+
+*   **Description:** The host port on which Traefik listens for incoming HTTPS (SSL/TLS) traffic. This port should be used if you configure Traefik with SSL certificates.
+*   **Default Value:** `443`
+*   **Example Value:** `8443`
+*   **Used By:** Traefik gateway (`routing-compose.yml`).
+
+#### `TRAEFIK_DASHBOARD_PORT`
+
+*   **Description:** The internal port for Traefik's own management dashboard, which is typically exposed locally on the host via `127.0.0.1:8081`. This variable refers to Traefik's *internal* listening port for its dashboard.
+*   **Default Value:** `8080`
+*   **Example Value:** `8080`
+*   **Used By:** Traefik gateway (`routing-compose.yml` for internal port mapping).
 
 ### VPN Variables
 
-These variables are used for configuring an optional VPN client container.
+These variables are placeholders for configuring user-defined VPN services.
 
-*   **`VPN_USER`**
-    *   **Description:** The username required for authentication with a VPN service, used by the `cloudflared` container or other VPN client containers.
-    *   **Default Value:** `user`
-    *   **Example Value:** `jake`
-    *   **Used By:** VPN client container (e.g., `cloudflared` or similar in user stacks)
+#### `VPN_USER`
 
-*   **`VPN_PASSWORD`**
-    *   **Description:** The password required for authentication with a VPN service, used by the `cloudflared` container or other VPN client containers.
-    *   **Default Value:** `password`
-    *   **Example Value:** `MySecureVPNPass`
-    *   **Used By:** VPN client container (e.g., `cloudflared` or similar in user stacks)
+*   **Description:** A username variable intended for use with user-defined VPN services or tunnel configurations that require authentication. (Note: The `cloudflared` container, while part of the routing stack, typically uses tokens, not username/password, for its tunnel functionality).
+*   **Default Value:** `user`
+*   **Example Value:** `m3talvpn`
+*   **Used By:** User-defined VPN/tunnel Docker Compose stacks that might require a username.
+
+#### `VPN_PASSWORD`
+
+*   **Description:** A password variable intended for use with user-defined VPN services or tunnel configurations that require authentication.
+*   **Default Value:** `password`
+*   **Example Value:** `SecureVpnPass123`
+*   **Used By:** User-defined VPN/tunnel Docker Compose stacks that might require a password.
 
 ### System Variables
 
-General system-wide variables, often related to user permissions and localization.
+These variables control system-level settings for Docker containers.
 
-*   **`PUID`**
-    *   **Description:** The User ID (UID) that Docker containers should run as. This ensures containers have appropriate permissions to interact with host-mounted volumes, matching the permissions of a user on the host system.
-    *   **Default Value:** `1000`
-    *   **Example Value:** `1001`
-    *   **Used By:** All M3TAL Docker Compose stacks (`m3tal-dashboard`, user stacks).
+#### `PUID`
 
-*   **`PGID`**
-    *   **Description:** The Group ID (GID) that Docker containers should run as. Similar to `PUID`, this ensures correct group-based file permissions for host-mounted volumes.
-    *   **Default Value:** `1000`
-    *   **Example Value:** `1001`
-    *   **Used By:** All M3TAL Docker Compose stacks (`m3tal-dashboard`, user stacks).
+*   **Description:** The User ID (UID) that Docker containers will use to run their processes. This is crucial for ensuring correct file permissions on mounted volumes, preventing permission denied errors. It should typically match the UID of the user owning the `BASE_STORAGE_PATH` on the host system.
+*   **Default Value:** `1000`
+*   **Example Value:** `1001`
+*   **Used By:** M3TAL Dashboard container, all user-defined Docker Compose stacks.
 
-*   **`TZ`**
-    *   **Description:** Sets the timezone for Docker containers. This ensures that logs, timestamps, and scheduled tasks within containers are aligned with the desired geographical region.
-    *   **Default Value:** `America/Denver`
-    *   **Example Value:** `Europe/London`, `Asia/Tokyo`
-    *   **Used By:** All M3TAL Docker Compose stacks (`m3tal-dashboard`, user stacks).
+#### `PGID`
+
+*   **Description:** The Group ID (GID) that Docker containers will use for their processes. Similar to `PUID`, this is vital for ensuring correct file permissions on mounted volumes. It should typically match the GID of the group owning the `BASE_STORAGE_PATH` on the host system.
+*   **Default Value:** `1000`
+*   **Example Value:** `1001`
+*   **Used By:** M3TAL Dashboard container, all user-defined Docker Compose stacks.
+
+#### `TZ`
+
+*   **Description:** Sets the timezone inside M3TAL Docker containers. This ensures logs, timestamps, and scheduled tasks within containers are consistent with your local time. Use standard timezone names (e.g., `America/New_York`, `Europe/London`).
+*   **Default Value:** `America/Denver`
+*   **Example Value:** `Europe/Berlin`
+*   **Used By:** M3TAL Dashboard container, all user-defined Docker Compose stacks.
